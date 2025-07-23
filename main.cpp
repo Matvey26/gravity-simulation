@@ -44,7 +44,7 @@ struct Points {
 int main() {
     // Создаем окно SFML
     sf::RenderWindow window(sf::VideoMode(SCREEN_WIDTH, SCREEN_HEIGHT), "Gravitational Simulation");
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(30);
     
     // Создаем генератор случайных чисел
     std::random_device rd;
@@ -85,6 +85,12 @@ int main() {
     root.corner = {0, 0};
     root.width = 2000;
     root.height = 2000;
+
+    // Переменные для подсчета FPS
+    sf::Clock clock;
+    std::vector<float> frameTimes;
+    const size_t FRAME_AVERAGE_COUNT = 10; // Количество кадров для усреднения FPS
+
     // Главный цикл
     int i = 0;
     while (window.isOpen()) {
@@ -106,6 +112,28 @@ int main() {
 
         // Отображаем всё на экране
         window.display();
+
+        // Подсчет FPS
+        float frameTime = clock.restart().asSeconds();
+        frameTimes.push_back(frameTime);
+
+        // Удаляем старые времена кадров, если их больше FRAME_AVERAGE_COUNT
+        if (frameTimes.size() > FRAME_AVERAGE_COUNT) {
+            frameTimes.erase(frameTimes.begin());
+        }
+
+        // Вычисляем среднее время кадра и FPS
+        if (frameTimes.size() == FRAME_AVERAGE_COUNT) {
+            float averageFrameTime = 0.0f;
+            for (float time : frameTimes) {
+                averageFrameTime += time;
+            }
+            averageFrameTime /= FRAME_AVERAGE_COUNT;
+            float fps = 1.0f / averageFrameTime;
+
+            // Выводим FPS в терминал
+            std::cout << "; FPS: " << fps;
+        }
     }
 
     return 0;
